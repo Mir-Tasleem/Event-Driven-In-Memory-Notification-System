@@ -3,7 +3,6 @@ package org.example.notifications.subscribers;
 import org.example.notifications.events.Event;
 import org.example.notifications.util.IdGenerator;
 
-import java.util.function.Predicate;
 
 public abstract class AbstractSubscriber<T extends Event> implements Subscriber<T> {
     private final String id;

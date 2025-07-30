@@ -1,35 +1,44 @@
-//package org.example.notifications.subscribers;
-//
-//import org.example.notifications.events.Event;
-//import org.example.notifications.subscribers.AbstractSubscriber;
-//import org.example.notifications.subscribers.Subscriber;
-//
-//import java.util.ArrayList;
-//import java.util.List;
-//import java.util.function.Predicate;
-//import java.util.stream.Collectors;
-//
-//public class User extends AbstractSubscriber<Event> {
-//    private static final List<Subscriber> strategies = new ArrayList<>();
-//
-//    public User(String name) {
-//        super(name);
-//    }
-//
-//    public void addStrategy(Subscriber strategy) {
-//        strategies.add(strategy);
-//    }
-//
-//    @Override
-//    public  String notify(Event event) {
-//        return strategies.stream()
-//                .filter(s -> s.getFilter().test(event))
-//                .map(s -> getName() + " received: " + s.formatNotification(event))
-//                .collect(Collectors.joining("\n"));
-//    }
-//
-//    @Override
-//    public Predicate<Event> getFilter() {
-//        return event -> strategies.stream().anyMatch(s -> s.getFilter().test(event));
-//    }
-//}
+package org.example.notifications.subscribers;
+
+import org.example.notifications.events.Event;
+import org.example.notifications.events.Priority;
+
+public class User {
+    private final String userId;
+    private final String name;
+    private Subscriber<Event> currentSubscriber;
+
+    public User(String userId, String name) {
+        this.userId = userId;
+        this.name = name;
+        this.currentSubscriber = new CompositeSubscriber(name);
+    }
+
+    public void addSubscription(SubscriberType type, Object... params) {
+        switch (type) {
+            case ALL_EVENTS:
+                ((CompositeSubscriber) currentSubscriber).addSubscriber(new AllEventsSubscriber(name));
+                break;
+            case PRIORITY:
+                Priority priority = (Priority) params[0];
+                ((CompositeSubscriber) currentSubscriber).addSubscriber(new PrioritySubscriber(name, priority));
+                break;
+            case TASK_ONLY:
+                ((CompositeSubscriber) currentSubscriber).addSubscriber(new TaskOnlySubscriber(name));
+                break;
+            case TIME_WINDOW:
+                int startHour = (int) params[0];
+                int endHour = (int) params[1];
+                ((CompositeSubscriber) currentSubscriber).addSubscriber(new TimeWindowSubscriber(name, startHour, endHour));
+                break;
+        }
+    }
+
+    public Subscriber<Event> getSubscriber() {
+        return currentSubscriber;
+    }
+
+    public void clearSubscriptions() {
+        this.currentSubscriber = new CompositeSubscriber(name);
+    }
+}

@@ -2,7 +2,9 @@ package org.example.notifications.centralSystem;
 
 import org.example.notifications.events.Event;
 import org.example.notifications.logger.EventLogger;
+import org.example.notifications.subscribers.CompositeSubscriber;
 import org.example.notifications.subscribers.Subscriber;
+import org.example.notifications.subscribers.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,6 +31,18 @@ public class EventBus<T extends Event> {
         this.executorService = Executors.newFixedThreadPool(threadPoolSize);
     }
 
+    public void registerUserSubscriptions(User user) {
+        registerSubscriber((Subscriber<T>) user.getSubscriber());
+    }
+
+    public void registerMultipleUsers(List<User> users) {
+        users.forEach(this::registerUserSubscriptions);
+    }
+
+    public void registerSubscribers(List<Subscriber<T>> subscribers) {
+        this.subscribers.addAll(subscribers);
+    }
+
 
     public void registerSubscriber(Subscriber<T> subscriber) {
         subscribers.add(subscriber);
@@ -44,12 +58,16 @@ public class EventBus<T extends Event> {
                 executorService.submit(() -> {
                     try {
                         String result = subscriber.notify(event);
-                        logger.info("[Notify] : {}" , result);
+                        // Add subscriber type info to logs
+                        String logMsg = subscriber instanceof CompositeSubscriber ?
+                                "[Composite Notify] " + result :
+                                "[Notify] " + result;
+                        logger.info(logMsg);
                     } catch (Exception ex) {
-                        logger.error("Failed to notify {} : {}" ,subscriber.getName() ,  ex.getMessage());
+                        logger.error("Failed to notify {} : {}", subscriber.getName(), ex.getMessage());
                     }
                 });
-                notified.add(subscriber.getName());
+                notified.add(subscriber.getClass().getSimpleName() + ": " + subscriber.getName());
             }
         }
 
