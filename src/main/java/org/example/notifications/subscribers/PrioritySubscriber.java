@@ -15,7 +15,7 @@ public class PrioritySubscriber extends AbstractSubscriber<Event> {
 
     @Override
     public String notify(Event e) {
-        return getName() + " received " + e.getPriority() + "-priority event: " + e.getPayload();
+        return String.format("%s[%s] recieved [%s] priority event: %s",getName(),getId(),e.getPriority(),e.getPayload());
     }
 
     @Override

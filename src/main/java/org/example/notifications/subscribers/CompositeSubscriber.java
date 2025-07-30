@@ -30,6 +30,6 @@ public class CompositeSubscriber extends AbstractSubscriber<Event> {
 
     @Override
     public Predicate<Event> getFilter() {
-        return event -> subscribers.stream().anyMatch(s -> s.getFilter().test(event));
+        return event -> subscribers.stream().allMatch(s -> s.getFilter().test(event));
     }
 }

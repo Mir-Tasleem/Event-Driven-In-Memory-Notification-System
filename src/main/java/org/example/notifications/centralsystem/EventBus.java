@@ -1,6 +1,7 @@
-package org.example.notifications.centralSystem;
+package org.example.notifications.centralsystem;
 
 import org.example.notifications.events.Event;
+import org.example.notifications.events.NewTaskEvent;
 import org.example.notifications.logger.EventLogger;
 import org.example.notifications.subscribers.CompositeSubscriber;
 import org.example.notifications.subscribers.Subscriber;
@@ -74,7 +75,7 @@ public class EventBus<T extends Event> {
         notificationLog.put(event, notified);
         eventCount.incrementAndGet();
 
-        if (event.getClass().getSimpleName().equals("NewTaskEvent")) {
+        if (event instanceof NewTaskEvent) {
             scheduleReminder(event);
         }
     }

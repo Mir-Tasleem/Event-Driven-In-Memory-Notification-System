@@ -1,6 +1,6 @@
 package org.example.notifications.publishers;
 
-import org.example.notifications.centralSystem.EventBus;
+import org.example.notifications.centralsystem.EventBus;
 import org.example.notifications.events.NewTaskEvent;
 import org.example.notifications.events.Priority;
 import org.example.notifications.util.IdGenerator;

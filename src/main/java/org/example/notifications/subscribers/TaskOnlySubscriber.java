@@ -11,7 +11,7 @@ public class TaskOnlySubscriber extends AbstractSubscriber<Event> {
 
     @Override
     public String notify(Event e) {
-        return getName() + " received task: " + e.getPayload();
+        return String.format("%s[%s] recieved [%s] : %s",getName(),getId(),e.getEventType(),e.getPayload());
     }
 
     @Override

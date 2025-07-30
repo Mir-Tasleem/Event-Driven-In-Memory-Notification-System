@@ -11,7 +11,8 @@ public class AllEventsSubscriber extends AbstractSubscriber<Event> {
 
     @Override
     public String notify(Event e) {
-        return getName() + " received: " + e.getEventType() + " - " + e.getPayload();
+        return String.format("%s[%s] recieved [%s] : %s",getName(),getId(),e.getEventType(),e.getPayload());
+
     }
 
     @Override

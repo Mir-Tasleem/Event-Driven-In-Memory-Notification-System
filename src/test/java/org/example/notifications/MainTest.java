@@ -1,6 +1,6 @@
 package org.example.notifications;
 
-import org.example.notifications.centralSystem.EventBus;
+import org.example.notifications.centralsystem.EventBus;
 import org.example.notifications.events.Event;
 import org.example.notifications.events.NewTaskEvent;
 import org.example.notifications.events.Priority;
@@ -22,9 +22,10 @@ public class MainTest {
     @BeforeEach
     void setUp() {
         eventLogger = new EventLogger();
-        eventBus = new EventBus<Event>(eventLogger, 3);
+        eventBus = new EventBus<>(eventLogger, 3);
     }
 
+    // Existing tests for individual subscribers
     @Test
     void testAllEventsSubscriberReceivesAllEvents() throws InterruptedException {
         AllEventsSubscriber subscriber = new AllEventsSubscriber("AllSub");
@@ -33,11 +34,8 @@ public class MainTest {
         NewTaskEvent event = new NewTaskEvent("Task 1", Priority.LOW, LocalDateTime.now());
         eventBus.publishEvent(event);
 
-        Thread.sleep(200); // allow async delivery
-
-        Map<Event, List<String>> log = eventBus.getNotificationLog();
-        assertTrue(log.containsKey(event));
-        assertTrue(log.get(event).contains("AllSub"));
+        Thread.sleep(200);
+        assertNotificationReceived(event, "AllEventsSubscriber: AllSub");
     }
 
     @Test
@@ -52,10 +50,8 @@ public class MainTest {
         eventBus.publishEvent(lowEvent);
 
         Thread.sleep(300);
-
-        Map<Event, List<String>> log = eventBus.getNotificationLog();
-        assertTrue(log.get(highEvent).contains("HighOnly"));
-        assertFalse(log.getOrDefault(lowEvent, List.of()).contains("HighOnly"));
+        assertNotificationReceived(highEvent, "PrioritySubscriber: HighOnly");
+        assertNotificationNotReceived(lowEvent, "PrioritySubscriber: HighOnly");
     }
 
     @Test
@@ -67,9 +63,7 @@ public class MainTest {
         eventBus.publishEvent(taskEvent);
 
         Thread.sleep(200);
-
-        Map<Event, List<String>> log = eventBus.getNotificationLog();
-        assertTrue(log.get(taskEvent).contains("TaskOnly"));
+        assertNotificationReceived(taskEvent, "TaskOnlySubscriber: TaskOnly");
     }
 
     @Test
@@ -82,8 +76,44 @@ public class MainTest {
         eventBus.publishEvent(taskEvent);
 
         Thread.sleep(200);
+        assertNotificationReceived(taskEvent, "TimeWindowSubscriber: TimeFilter");
+    }
 
-        assertTrue(eventBus.getNotificationLog().get(taskEvent).contains("TimeFilter"));
+    // New tests for User and CompositeSubscriber functionality
+    @Test
+    void testUserWithMultipleSubscriptions() throws InterruptedException {
+        User user = new User("user1", "TestUser");
+        user.addSubscription(SubscriberType.PRIORITY, Priority.HIGH);
+        user.addSubscription(SubscriberType.TASK_ONLY);
+        eventBus.registerUserSubscriptions(user);
+
+        NewTaskEvent highPriorityTask = new NewTaskEvent("Important", Priority.HIGH, LocalDateTime.now());
+        NewTaskEvent lowPriorityTask = new NewTaskEvent("Trivial", Priority.LOW, LocalDateTime.now());
+
+        eventBus.publishEvent(highPriorityTask);
+        eventBus.publishEvent(lowPriorityTask);
+
+        Thread.sleep(300);
+        assertNotificationReceived(highPriorityTask, "CompositeSubscriber: TestUser");
+        assertNotificationNotReceived(lowPriorityTask, "CompositeSubscriber: TestUser");
+    }
+
+    @Test
+    void testMultipleUsersWithDifferentPreferences() throws InterruptedException {
+        User manager = new User("mgr1", "Manager");
+        manager.addSubscription(SubscriberType.PRIORITY, Priority.HIGH);
+
+        User developer = new User("dev1", "Developer");
+        developer.addSubscription(SubscriberType.TASK_ONLY);
+
+        eventBus.registerMultipleUsers(List.of(manager, developer));
+
+        NewTaskEvent event = new NewTaskEvent("Task", Priority.HIGH, LocalDateTime.now());
+        eventBus.publishEvent(event);
+
+        Thread.sleep(300);
+        assertNotificationReceived(event, "CompositeSubscriber: Manager");
+        assertNotificationReceived(event, "CompositeSubscriber: Developer");
     }
 
     @Test
@@ -95,9 +125,24 @@ public class MainTest {
         eventBus.publishEvent(event2);
 
         Thread.sleep(200);
-
         assertEquals(2, eventBus.getEventHistory().size());
         assertEquals(2, eventBus.getTotalPublishedEvents());
+    }
+
+    // Helper assertion methods
+    private void assertNotificationReceived(Event event, String expectedSubscriberInfo) {
+        Map<Event, List<String>> log = eventBus.getNotificationLog();
+        assertTrue(log.containsKey(event), "Event not found in log");
+        assertTrue(log.get(event).contains(expectedSubscriberInfo),
+                "Subscriber " + expectedSubscriberInfo + " not notified");
+    }
+
+    private void assertNotificationNotReceived(Event event, String unexpectedSubscriberInfo) {
+        Map<Event, List<String>> log = eventBus.getNotificationLog();
+        if (log.containsKey(event)) {
+            assertFalse(log.get(event).contains(unexpectedSubscriberInfo),
+                    "Subscriber " + unexpectedSubscriberInfo + " was unexpectedly notified");
+        }
     }
 
     @AfterEach

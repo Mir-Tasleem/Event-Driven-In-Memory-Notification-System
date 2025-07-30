@@ -1,6 +1,6 @@
 package org.example.notifications.scheduler;
 
-import org.example.notifications.centralSystem.EventBus;
+import org.example.notifications.centralsystem.EventBus;
 import org.example.notifications.events.Priority;
 import org.example.notifications.events.TimeEvent;
 import org.slf4j.Logger;
@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import java.time.LocalDateTime;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 public class EventScheduler implements Runnable {
     Logger logger= LoggerFactory.getLogger(EventScheduler.class);

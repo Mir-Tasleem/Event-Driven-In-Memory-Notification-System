@@ -1,6 +1,6 @@
 package org.example.notifications;
 
-import org.example.notifications.centralSystem.EventBus;
+import org.example.notifications.centralsystem.EventBus;
 import org.example.notifications.events.Event;
 import org.example.notifications.logger.EventLogger;
 import org.example.notifications.events.Priority;
@@ -61,7 +61,7 @@ public class Main {
         schedulerService.scheduleAtFixedRate(scheduler, 0, 10, TimeUnit.SECONDS);
 
         // Let the system run for 1 minute
-        Thread.sleep(1000);
+        Thread.sleep(60000);
 
         // Step 5: Shutdown everything
         schedulerService.shutdown();
