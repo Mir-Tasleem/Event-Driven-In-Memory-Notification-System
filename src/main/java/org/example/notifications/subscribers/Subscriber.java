@@ -4,8 +4,9 @@ import org.example.notifications.events.Event;
 
 import java.util.function.Predicate;
 
-public interface Subscriber {
+public interface Subscriber<T extends Event> {
+    String getId();
     String getName();
-    String notify(Event e);
-    Predicate<Event> getFilter();
+    String notify(T event);
+    Predicate<T> getFilter();
 }

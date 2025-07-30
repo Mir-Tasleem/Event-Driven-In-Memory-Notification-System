@@ -1,29 +1,35 @@
 package org.example.notifications.scheduler;
 
 import org.example.notifications.centralSystem.EventBus;
+import org.example.notifications.events.Priority;
 import org.example.notifications.events.TimeEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.time.LocalDateTime;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class EventScheduler implements Runnable {
-    private final EventBus eventBus;
+    Logger logger= LoggerFactory.getLogger(EventScheduler.class);
+
+    private final EventBus<TimeEvent> eventBus;
     private final int intervalSeconds;
     private final ScheduledExecutorService executorService;
 
-    public EventScheduler(EventBus eventBus, int intervalSeconds) {
-        this.eventBus = eventBus;
+    public EventScheduler(EventBus<? super TimeEvent> eventBus, int intervalSeconds) {
+        this.eventBus = (EventBus<TimeEvent>) eventBus;
         this.intervalSeconds = intervalSeconds;
         this.executorService = Executors.newSingleThreadScheduledExecutor();
     }
 
     @Override
     public void run() {
-        executorService.scheduleAtFixedRate(() -> {
-            TimeEvent event = new TimeEvent("Recurring Time Event");
+
+            TimeEvent event = new TimeEvent("Recurring Time Event", Priority.LOW,LocalDateTime.now());
             eventBus.publishEvent(event);
-        }, 0, intervalSeconds, TimeUnit.SECONDS);
+
     }
 
     public void stop() {

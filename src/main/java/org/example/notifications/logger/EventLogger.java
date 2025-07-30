@@ -1,6 +1,7 @@
 package org.example.notifications.logger;
 
 import org.example.notifications.events.Event;
+import org.example.notifications.events.NewTaskEvent;
 import org.example.notifications.events.Priority;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +30,7 @@ public class EventLogger {
     public List<Event> getEventsByType(String type) {
         return eventLog.stream()
                 .filter(e -> e.getEventType().equalsIgnoreCase(type))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     // Group events by type
@@ -42,7 +43,7 @@ public class EventLogger {
     public List<Event> getEventsByPriority(Priority priority) {
         return eventLog.stream()
                 .filter(e -> priority.equals(e.getPriority()))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     // Get events created in the last N minutes
@@ -50,10 +51,10 @@ public class EventLogger {
         LocalDateTime cutoff = LocalDateTime.now().minusMinutes(minutes);
         return eventLog.stream()
                 .filter(e -> e.getTimeStamp().isAfter(cutoff))
-                .collect(Collectors.toList());
+                .toList();
     }
 
-    // Count total number of events
+    // Count the total number of events
     public int getTotalEventCount() {
         return eventLog.size();
     }
@@ -87,6 +88,23 @@ public class EventLogger {
         } else {
             list.forEach(event ->
                     logger.info("{} | {} | {}", event.getTimeStamp(), event.getEventType(), event.getPayload()));
+        }
+    }
+
+    public void printEventsByType(String type){
+        List<Event> newTaskEvents = getEventsByType(type);
+
+        if (newTaskEvents.isEmpty()) {
+            logger.info("No NewTaskEvents found");
+        } else {
+            logger.info("===== NewTaskEvents =====");
+            newTaskEvents.forEach(event -> {
+                if (event instanceof NewTaskEvent taskEvent) {
+                    logger.info("Task: {}",
+                            taskEvent.getPayload());
+                }
+            });
+            logger.info("Total NewTaskEvents: {}", newTaskEvents.size());
         }
     }
 }
