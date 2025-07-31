@@ -2,14 +2,15 @@ package org.example.notifications.subscribers;
 
 import org.example.notifications.events.Event;
 import org.example.notifications.events.Priority;
+import org.example.notifications.util.IdGenerator;
 
 public class User {
     private final String userId;
     private final String name;
     private Subscriber<Event> currentSubscriber;
 
-    public User(String userId, String name) {
-        this.userId = userId;
+    public User(String name) {
+        this.userId = IdGenerator.generateSubscriberId();
         this.name = name;
         this.currentSubscriber = new CompositeSubscriber(name);
     }

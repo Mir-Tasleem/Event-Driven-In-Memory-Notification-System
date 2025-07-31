@@ -25,10 +25,8 @@ public class EventScheduler implements Runnable {
 
     @Override
     public void run() {
-
-            TimeEvent event = new TimeEvent("Recurring Time Event", Priority.LOW,LocalDateTime.now());
+            TimeEvent event = new TimeEvent("Recurring Time Event", LocalDateTime.now());
             eventBus.publishEvent(event);
-
     }
 
     public void stop() {

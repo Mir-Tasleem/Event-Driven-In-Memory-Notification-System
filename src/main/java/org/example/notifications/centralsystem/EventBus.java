@@ -40,10 +40,6 @@ public class EventBus<T extends Event> {
         users.forEach(this::registerUserSubscriptions);
     }
 
-    public void registerSubscribers(List<Subscriber<T>> subscribers) {
-        this.subscribers.addAll(subscribers);
-    }
-
 
     public void registerSubscriber(Subscriber<T> subscriber) {
         subscribers.add(subscriber);
@@ -81,7 +77,7 @@ public class EventBus<T extends Event> {
     }
 
     private void scheduleReminder(T event) {
-        long delayMillis = Duration.between(LocalDateTime.now(), event.getTimeStamp().minusMinutes(2)).toMillis();
+        long delayMillis = Duration.between(LocalDateTime.now(), event.getTimeStamp().minusMinutes(5)).toMillis();
 
         if (delayMillis <= 0) {
             logger.warn("[Reminder] Reminder time already passed for event: {}", event.getEventId());

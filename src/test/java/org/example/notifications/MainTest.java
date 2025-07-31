@@ -11,6 +11,7 @@ import org.junit.jupiter.api.*;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -82,7 +83,7 @@ public class MainTest {
     // New tests for User and CompositeSubscriber functionality
     @Test
     void testUserWithMultipleSubscriptions() throws InterruptedException {
-        User user = new User("user1", "TestUser");
+        User user = new User( "TestUser");
         user.addSubscription(SubscriberType.PRIORITY, Priority.HIGH);
         user.addSubscription(SubscriberType.TASK_ONLY);
         eventBus.registerUserSubscriptions(user);
@@ -100,10 +101,10 @@ public class MainTest {
 
     @Test
     void testMultipleUsersWithDifferentPreferences() throws InterruptedException {
-        User manager = new User("mgr1", "Manager");
+        User manager = new User( "Manager");
         manager.addSubscription(SubscriberType.PRIORITY, Priority.HIGH);
 
-        User developer = new User("dev1", "Developer");
+        User developer = new User("Developer");
         developer.addSubscription(SubscriberType.TASK_ONLY);
 
         eventBus.registerMultipleUsers(List.of(manager, developer));
@@ -127,6 +128,62 @@ public class MainTest {
         Thread.sleep(200);
         assertEquals(2, eventBus.getEventHistory().size());
         assertEquals(2, eventBus.getTotalPublishedEvents());
+    }
+
+    @Test
+    void testMultiplePublishersConcurrently() throws InterruptedException {
+        // Register subscribers
+        eventBus.registerSubscriber(new AllEventsSubscriber("AllEventsMonitor"));
+
+        // Create multiple publishers
+        int numberOfPublishers = 5;
+        int eventsPerPublisher = 10;
+        ExecutorService publisherPool = Executors.newFixedThreadPool(numberOfPublishers);
+        CountDownLatch latch = new CountDownLatch(numberOfPublishers * eventsPerPublisher);
+
+        // Track expected events
+        List<NewTaskEvent> expectedEvents = new CopyOnWriteArrayList<>();
+
+        // Start publishers
+        for (int i = 0; i < numberOfPublishers; i++) {
+            final int publisherId = i;
+            publisherPool.submit(() -> {
+                for (int j = 0; j < eventsPerPublisher; j++) {
+                    NewTaskEvent event = new NewTaskEvent(
+                            "Task from publisher " + publisherId + "-" + j,
+                            Priority.values()[j % Priority.values().length],
+                            LocalDateTime.now().plusMinutes(j)
+                    );
+                    expectedEvents.add(event);
+                    eventBus.publishEvent(event);
+                    latch.countDown();
+                    try {
+                        Thread.sleep(10); // Small delay between events
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+            });
+        }
+
+        // Wait for all events to be published
+        assertTrue(latch.await(5, TimeUnit.SECONDS), "Not all events were published in time");
+        publisherPool.shutdown();
+
+        // Allow some time for processing
+        Thread.sleep(500);
+
+        // Verify all events were processed
+        assertEquals(numberOfPublishers * eventsPerPublisher, eventBus.getTotalPublishedEvents());
+
+        // Verify each event was logged
+        Map<Event, List<String>> notificationLog = eventBus.getNotificationLog();
+        for (NewTaskEvent expectedEvent : expectedEvents) {
+            assertTrue(notificationLog.containsKey(expectedEvent),
+                    "Event not processed: " + expectedEvent.getPayload());
+            assertTrue(notificationLog.get(expectedEvent).contains("AllEventsSubscriber: AllEventsMonitor"),
+                    "Subscriber not notified for event: " + expectedEvent.getPayload());
+        }
     }
 
     // Helper assertion methods
