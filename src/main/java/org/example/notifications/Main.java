@@ -74,7 +74,7 @@ public class Main {
         schedulerService.scheduleAtFixedRate(scheduler, 0, 10, TimeUnit.SECONDS);
 
         // Let the system run for 1 minute
-        Thread.sleep(60000);
+        Thread.sleep(10000);
 
         // Shutdown everything
         schedulerService.shutdown();

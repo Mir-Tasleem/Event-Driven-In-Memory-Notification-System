@@ -3,6 +3,7 @@ package org.example.notifications.logger;
 import org.example.notifications.events.Event;
 import org.example.notifications.events.NewTaskEvent;
 import org.example.notifications.events.Priority;
+import org.example.notifications.events.TimeEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,19 +93,23 @@ public class EventLogger {
     }
 
     public void printEventsByType(String type){
-        List<Event> newTaskEvents = getEventsByType(type);
+        List<Event> event = getEventsByType(type);
 
-        if (newTaskEvents.isEmpty()) {
+        if (event.isEmpty()) {
             logger.info("No NewTaskEvents found");
         } else {
-            logger.info("===== NewTaskEvents =====");
-            newTaskEvents.forEach(event -> {
-                if (event instanceof NewTaskEvent taskEvent) {
+            logger.info("");
+            event.forEach(e -> {
+                if (e instanceof NewTaskEvent taskEvent) {
                     logger.info("Task: {}",
                             taskEvent.getPayload());
                 }
+                else if(e instanceof TimeEvent timeEvent) {
+                    logger.info("Task: {}",
+                            timeEvent.getPayload());
+                }
             });
-            logger.info("Total NewTaskEvents: {}", newTaskEvents.size());
+            logger.info("Total {}: {}", type,event.size());
         }
     }
 }
