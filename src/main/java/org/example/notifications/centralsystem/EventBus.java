@@ -85,22 +85,58 @@ public class EventBus<T extends Event> {
         }
 
         scheduler.schedule(() -> {
-            logger.warn("[Reminder] Notifying subscribers 5 minutes before: {}", event.getEventId());
+            logger.info("[Reminder] Starting reminder notifications for event: {}", event.getEventId());
+
+            // Create thread-safe lists for tracking
+            List<String> successfulNotifications = new CopyOnWriteArrayList<>();
+            List<String> failedNotifications = new CopyOnWriteArrayList<>();
+            CountDownLatch completionLatch = new CountDownLatch(subscribers.size());
+
             for (Subscriber<T> subscriber : subscribers) {
                 if (subscriber.getFilter().test(event)) {
                     executorService.submit(() -> {
                         try {
                             String result = subscriber.notify(event);
-                            logger.info("[Reminder Notify] : {}", result);
+                            successfulNotifications.add(subscriber.getName());
+                            logger.debug("[Reminder Success] {} received reminder: {}",
+                                    subscriber.getName(), result);
                         } catch (Exception ex) {
-                            logger.error("[Reminder Error] Failed to notify {} : {}", subscriber.getName(), ex.getMessage());
+                            failedNotifications.add(subscriber.getName());
+                            logger.error("[Reminder Error] {} failed: {}",
+                                    subscriber.getName(), ex.getMessage());
+                        } finally {
+                            completionLatch.countDown();
                         }
                     });
+                } else {
+                    completionLatch.countDown();
                 }
+            }
+
+            try {
+                if (!completionLatch.await(30, TimeUnit.SECONDS)) {
+                    logger.warn("[Reminder Timeout] Some reminders didn't complete in time");
+                }
+
+                logger.info("[Reminder Complete] Event: {} | Successful: {} | Failed: {}",
+                        event.getEventId(),
+                        successfulNotifications.size(),
+                        failedNotifications.size());
+
+                notificationLog.computeIfPresent(event, (k, v) -> {
+                    v.addAll(successfulNotifications.stream()
+                            .map(name -> "[Reminder] " + name)
+                            .toList());
+                    return v;
+                });
+
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                logger.warn("[Reminder Interrupted] Reminders cancelled for event: {}",
+                        event.getEventId());
             }
         }, delayMillis, TimeUnit.MILLISECONDS);
     }
-
 
     public List<T> getEventHistory() {
         return eventHistory;
