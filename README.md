@@ -1,4 +1,4 @@
-# 📢 Event-Driven Notification System
+# 📢 Event-Driven-In-Memory-Notification-System
 
 A modular, event-driven in-memory notification system built in Java. The system allows flexible subscriber strategies (based on priority, time, event type, etc.), delayed and scheduled event publishing, and provides full logging and reporting.
 
