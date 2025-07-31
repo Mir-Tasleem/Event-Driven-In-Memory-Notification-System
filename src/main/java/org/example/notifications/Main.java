@@ -26,9 +26,9 @@ public class Main {
         EventBus<Event> eventBus = new EventBus<>(eventLogger, 5);
 
 
-        eventBus.registerSubscriber(new AllEventsSubscriber("SystemMonitor"));
-        eventBus.registerSubscriber(new TaskOnlySubscriber("TaskManager"));
-        eventBus.registerSubscriber(new TimeWindowSubscriber("BusinessHoursMonitor", 9, 17));
+        eventBus.registerSubscriber(new AllEventsSubscriber("SM","SystemMonitor"));
+        eventBus.registerSubscriber(new TaskOnlySubscriber("TM","TaskManager"));
+        eventBus.registerSubscriber(new TimeWindowSubscriber("BHM","BusinessHoursMonitor", 9, 17));
 
         // User-based composite subscribers
         User projectManager = new User("Project Manager");

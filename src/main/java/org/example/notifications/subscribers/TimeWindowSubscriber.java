@@ -8,8 +8,8 @@ public class TimeWindowSubscriber extends AbstractSubscriber<Event> {
     private final int startHour;
     private final int endHour;
 
-    public TimeWindowSubscriber(String name, int startHour, int endHour) {
-        super(name);
+    public TimeWindowSubscriber(String id, String name, int startHour, int endHour) {
+        super(id, name);
         this.startHour = startHour;
         this.endHour = endHour;
     }

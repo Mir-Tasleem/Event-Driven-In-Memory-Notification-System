@@ -75,7 +75,6 @@ cd Event-Driven-In-Memory-Notification-System
 mvn clean package
 java -jar target/Event-Driven-Notification-System-1.0-SNAPSHOT-jar-with-dependencies.jar
 ```
-
 Or from your IDE, run the `Main` class directly.
 
 #### 3. View Output
@@ -83,9 +82,13 @@ All logs and subscriber notifications are printed to the console, including dela
 
 ---
 
+
 ## 🧪 Run the Tests
 
-### 1. Add JUnit (if using Maven)
+### ✅ Prerequisites
+
+Make sure your `pom.xml` already includes the JUnit dependency:
+
 ```xml
 <dependency>
     <groupId>org.junit.jupiter</groupId>
@@ -93,14 +96,30 @@ All logs and subscriber notifications are printed to the console, including dela
     <version>5.10.0</version>
     <scope>test</scope>
 </dependency>
-```
+````
 
-### 2. Run Tests
+> ✅ If you’ve already pushed `pom.xml` with this dependency, you’re good to go.
+
+---
+
+### ▶️ Execute the Tests
+
+Run all unit tests using Maven:
+
 ```bash
 mvn test
 ```
 
+Test results will appear in the console, and detailed reports are stored in:
+
+```
+target/surefire-reports/
+```
+
+You can open these reports in any text editor or IDE to review test output and errors (if any).
+
 ---
+
 
 ## 🧠 Key Features
 

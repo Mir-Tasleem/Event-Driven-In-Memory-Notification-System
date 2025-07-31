@@ -7,39 +7,37 @@ import org.example.notifications.util.IdGenerator;
 public class User {
     private final String userId;
     private final String name;
-    private Subscriber<Event> currentSubscriber;
+    private CompositeSubscriber currentSubscriber;
 
     public User(String name) {
         this.userId = IdGenerator.generateSubscriberId();
         this.name = name;
-        this.currentSubscriber = new CompositeSubscriber(name);
+        this.currentSubscriber = new CompositeSubscriber(userId, name);
     }
 
     public void addSubscription(SubscriberType type, Object... params) {
         switch (type) {
             case ALL_EVENTS:
-                ((CompositeSubscriber) currentSubscriber).addSubscriber(new AllEventsSubscriber(name));
+                currentSubscriber.addSubscriber(new AllEventsSubscriber(this.userId,this.name));
                 break;
             case PRIORITY:
                 Priority priority = (Priority) params[0];
-                ((CompositeSubscriber) currentSubscriber).addSubscriber(new PrioritySubscriber(name, priority));
+                currentSubscriber.addSubscriber(new PrioritySubscriber(this.userId,this.name, priority));
                 break;
             case TASK_ONLY:
-                ((CompositeSubscriber) currentSubscriber).addSubscriber(new TaskOnlySubscriber(name));
+                currentSubscriber.addSubscriber(new TaskOnlySubscriber(this.userId,this.name));
                 break;
             case TIME_WINDOW:
                 int startHour = (int) params[0];
                 int endHour = (int) params[1];
-                ((CompositeSubscriber) currentSubscriber).addSubscriber(new TimeWindowSubscriber(name, startHour, endHour));
+                currentSubscriber.addSubscriber(new TimeWindowSubscriber(this.userId,this.name, startHour, endHour));
                 break;
         }
     }
 
+
+
     public Subscriber<Event> getSubscriber() {
         return currentSubscriber;
-    }
-
-    public void clearSubscriptions() {
-        this.currentSubscriber = new CompositeSubscriber(name);
     }
 }

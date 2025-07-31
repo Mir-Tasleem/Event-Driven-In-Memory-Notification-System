@@ -5,8 +5,8 @@ import org.example.notifications.events.Event;
 import java.util.function.Predicate;
 
 public class AllEventsSubscriber extends AbstractSubscriber<Event> {
-    public AllEventsSubscriber(String name) {
-        super(name);
+    public AllEventsSubscriber(String id,String name) {
+        super(id,name);
     }
 
     @Override

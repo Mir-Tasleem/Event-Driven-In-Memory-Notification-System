@@ -26,10 +26,15 @@ public class MainTest {
         eventBus = new EventBus<>(eventLogger, 3);
     }
 
+    // Helper method to generate test IDs
+    private String testId() {
+        return "test-" + System.currentTimeMillis() + "-" + Math.random();
+    }
+
     // Existing tests for individual subscribers
     @Test
     void testAllEventsSubscriberReceivesAllEvents() throws InterruptedException {
-        AllEventsSubscriber subscriber = new AllEventsSubscriber("AllSub");
+        AllEventsSubscriber subscriber = new AllEventsSubscriber(testId(), "AllSub");
         eventBus.registerSubscriber(subscriber);
 
         NewTaskEvent event = new NewTaskEvent("Task 1", Priority.LOW, LocalDateTime.now());
@@ -41,7 +46,7 @@ public class MainTest {
 
     @Test
     void testPrioritySubscriberOnlyReceivesMatchingPriority() throws InterruptedException {
-        PrioritySubscriber highPrioritySub = new PrioritySubscriber("HighOnly", Priority.HIGH);
+        PrioritySubscriber highPrioritySub = new PrioritySubscriber(testId(), "HighOnly", Priority.HIGH);
         eventBus.registerSubscriber(highPrioritySub);
 
         NewTaskEvent highEvent = new NewTaskEvent("Urgent", Priority.HIGH, LocalDateTime.now());
@@ -57,7 +62,7 @@ public class MainTest {
 
     @Test
     void testTaskOnlySubscriberReceivesOnlyTaskEvents() throws InterruptedException {
-        TaskOnlySubscriber taskSub = new TaskOnlySubscriber("TaskOnly");
+        TaskOnlySubscriber taskSub = new TaskOnlySubscriber(testId(), "TaskOnly");
         eventBus.registerSubscriber(taskSub);
 
         NewTaskEvent taskEvent = new NewTaskEvent("Report", Priority.MEDIUM, LocalDateTime.now());
@@ -70,7 +75,7 @@ public class MainTest {
     @Test
     void testTimeWindowSubscriberFiltersByHour() throws InterruptedException {
         int nowHour = LocalDateTime.now().getHour();
-        TimeWindowSubscriber sub = new TimeWindowSubscriber("TimeFilter", nowHour - 1, nowHour + 1);
+        TimeWindowSubscriber sub = new TimeWindowSubscriber(testId(), "TimeFilter", nowHour - 1, nowHour + 1);
         eventBus.registerSubscriber(sub);
 
         NewTaskEvent taskEvent = new NewTaskEvent("Windowed", Priority.LOW, LocalDateTime.now());
@@ -83,7 +88,7 @@ public class MainTest {
     // New tests for User and CompositeSubscriber functionality
     @Test
     void testUserWithMultipleSubscriptions() throws InterruptedException {
-        User user = new User( "TestUser");
+        User user = new User("TestUser");
         user.addSubscription(SubscriberType.PRIORITY, Priority.HIGH);
         user.addSubscription(SubscriberType.TASK_ONLY);
         eventBus.registerUserSubscriptions(user);
@@ -101,7 +106,7 @@ public class MainTest {
 
     @Test
     void testMultipleUsersWithDifferentPreferences() throws InterruptedException {
-        User manager = new User( "Manager");
+        User manager = new User("Manager");
         manager.addSubscription(SubscriberType.PRIORITY, Priority.HIGH);
 
         User developer = new User("Developer");
@@ -133,7 +138,7 @@ public class MainTest {
     @Test
     void testMultiplePublishersConcurrently() throws InterruptedException {
         // Register subscribers
-        eventBus.registerSubscriber(new AllEventsSubscriber("AllEventsMonitor"));
+        eventBus.registerSubscriber(new AllEventsSubscriber(testId(), "AllEventsMonitor"));
 
         // Create multiple publishers
         int numberOfPublishers = 5;
@@ -185,6 +190,7 @@ public class MainTest {
                     "Subscriber not notified for event: " + expectedEvent.getPayload());
         }
     }
+
 
     // Helper assertion methods
     private void assertNotificationReceived(Event event, String expectedSubscriberInfo) {

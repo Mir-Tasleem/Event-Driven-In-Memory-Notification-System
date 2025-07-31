@@ -8,8 +8,8 @@ public abstract class AbstractSubscriber<T extends Event> implements Subscriber<
     private final String id;
     private final String name;
 
-    protected AbstractSubscriber(String name) {
-        this.id = IdGenerator.generateSubscriberId();
+    protected AbstractSubscriber(String id, String name) {
+        this.id = id;
         this.name = name;
     }
 

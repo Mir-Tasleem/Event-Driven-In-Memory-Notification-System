@@ -85,7 +85,7 @@ public class EventBus<T extends Event> {
         }
 
         scheduler.schedule(() -> {
-            logger.info("[Reminder] Notifying subscribers 5 minutes before: {}", event.getEventId());
+            logger.warn("[Reminder] Notifying subscribers 5 minutes before: {}", event.getEventId());
             for (Subscriber<T> subscriber : subscribers) {
                 if (subscriber.getFilter().test(event)) {
                     executorService.submit(() -> {

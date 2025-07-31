@@ -9,8 +9,8 @@ import java.util.function.Predicate;
 public class CompositeSubscriber extends AbstractSubscriber<Event> {
     private final List<Subscriber<Event>> subscribers = new ArrayList<>();
 
-    public CompositeSubscriber(String name) {
-        super(name);
+    public CompositeSubscriber(String id, String name) {
+        super(id,name);
     }
 
     public void addSubscriber(Subscriber<Event> subscriber) {

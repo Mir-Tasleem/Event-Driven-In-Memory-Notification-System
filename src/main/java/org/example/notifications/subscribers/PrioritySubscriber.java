@@ -8,8 +8,8 @@ import java.util.function.Predicate;
 public class PrioritySubscriber extends AbstractSubscriber<Event> {
     private final Priority priority;
 
-    public PrioritySubscriber(String name, Priority priority) {
-        super(name);
+    public PrioritySubscriber(String id,String name, Priority priority) {
+        super(id,name);
         this.priority = priority;
     }
 

@@ -5,8 +5,8 @@ import org.example.notifications.events.Event;
 import java.util.function.Predicate;
 
 public class TaskOnlySubscriber extends AbstractSubscriber<Event> {
-    public TaskOnlySubscriber(String name) {
-        super(name);
+    public TaskOnlySubscriber(String id, String name) {
+        super(id,name);
     }
 
     @Override
